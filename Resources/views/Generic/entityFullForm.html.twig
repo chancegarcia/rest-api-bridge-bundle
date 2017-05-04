@@ -1,0 +1,6 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    {% if withSubmitButton %}
+        <input type="submit" value="{{ submitButtonText|default('Submit') }}"/>
+    {% endif %}
+{{ form_end(form) }}
