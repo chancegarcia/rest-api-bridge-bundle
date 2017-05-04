@@ -4,13 +4,66 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <!--
+    <parameters>
+        <parameter key="chance.rest_api_bridge.handler.abstract.class">Chance\RestApi\BridgeBundle\Handler\AbstractHandler</parameter>
+        <parameter key="chance.rest_api_bridge.handler.rest.abstract.class">Chance\RestApi\BridgeBundle\Handler\AbstractRestHandler</parameter>
+        <parameter key="chance.rest_api_bridge.route_prefix">api_1_</parameter>
+    </parameters>
+
     <services>
-        <service id="chance_rest_api_bridge.example" class="Chance\RestApi\BridgeBundle\Example">
-            <argument type="service" id="service_id" />
-            <argument>plain_value</argument>
-            <argument>%parameter_name%</argument>
+        <service id="chance.rest_api_bridge.handler.abstract"
+                 class="%chance.rest_api_bridge.handler.abstract.class%"
+                 abstract="true">
+            <call method="setObjectManager">
+                <argument type="service" id="doctrine.orm.entity_manager"/>
+            </call>
+            <call method="setLogger">
+                <argument type="service" id="logger"/>
+            </call>
+            <call method="setTokenStorage">
+                <argument type="service" id="security.token_storage"/>
+            </call>
+            <call method="setValidator">
+                <argument type="service" id="validator"/>
+            </call>
+            <call method="setAuthorizationChecker">
+                <argument type="service" id="security.authorization_checker"/>
+            </call>
+            <call method="setRouter">
+                <argument type="service" id="router"/>
+            </call>
+            <call method="setTemplating">
+                <argument type="service" id="templating"/>
+            </call>
+            <call method="setMailer">
+                <argument type="service" id="mailer"/>
+            </call>
+            <call method="setEventDispatcher">
+                <argument type="service" id="event_dispatcher"/>
+            </call>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+        <service id="chance.rest_api_bridge.handler.rest.abstract"
+                 class="%chance.rest_api_bridge.handler.rest.abstract.class%"
+                 abstract="true" parent="chance.rest_api_bridge.handler.abstract">
+            <call method="setFormFactory">
+                <argument type="service" id="form.factory"/>
+            </call>
+            <call method="setRoutePrefix">
+                <argument>%chance.rest_api_bridge.route_prefix%</argument>
+            </call>
+            <tag name="monolog.logger" channel="api"/>
+        </service>
+
+        <service id="chance.rest_api_bridge.handler.basic"
+                 class="Chance\RestApi\BridgeBundle\Handler\BasicHandler"
+                 parent="chance.rest_api_bridge.handler.abstract">
+        </service>
+        <service id="chance.rest_api_bridge.handler.rest.basic"
+                 class="Chance\RestApi\BridgeBundle\Handler\BasicRestHandler"
+                 parent="chance.rest_api_bridge.handler.rest.abstract">
         </service>
     </services>
-    -->
 </container>

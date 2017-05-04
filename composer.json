@@ -48,5 +48,10 @@
     "incenteev-parameters": {
       "file": "app/config/parameters.yml"
     }
+  },
+  "autoload": {
+    "psr-4": {
+      "Chance\\RestApi\\BridgeBundle\\": ""
+    }
   }
 }

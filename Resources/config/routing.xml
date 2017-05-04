@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="chance_rest_api_bridge_homepage" path="/">
+    <route id="chance_rest_api_bridge_homepage" path="/chance/api/bridge">
         <default key="_controller">ChanceRestApiBridgeBundle:Default:index</default>
     </route>
 </routes>
