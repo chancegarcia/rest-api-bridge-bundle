@@ -45,4 +45,5 @@ class HandlerException extends UuidException
     const INVALID_ENTITY_ROUTE_KEY = 'ab769448-7426-482f-892f-fd4ab5ef4680';
     const INVALID_KEY = '9d654e29-7aba-49f3-b137-124c12ddaa22';
     const INVALID_TYPE = 'dd7a8d8c-eba8-449e-ae1e-7f64afc71c4d';
+    const DUPLICATE_ENTRY = 'c3df04db-c3ee-4f62-b59c-04a142a06c91';
 }
