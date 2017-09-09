@@ -32,7 +32,6 @@
 namespace Chance\RestApi\BridgeBundle\Controller\RestApi;
 
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
-use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
 use Chance\RestApi\BridgeBundle\Handler\AbstractRestHandler;
 use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
 use Doctrine\DBAL\Exception\NotNullConstraintViolationException;
@@ -46,7 +45,6 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -96,13 +94,14 @@ abstract class AbstractRestViewController extends FOSRestController
     {
         parent::setContainer($container);
 
+        // this is obviously a hack. there's probably a way to do this in the bundle build but I don't know how/where yet
         // can not do in construct because the handler service hasn't been defined/set yet
         $handler = $this->getHandler();
         $reflect = new \ReflectionClass($handler->getEntityClass());
 
         $shortName = $reflect->getShortName();
         $this->apiFormTemplateName = strtolower($shortName);
-        if (!is_string($this->routePrefix)) {
+        if (!is_string($this->routePrefix) && $container instanceof ContainerInterface) {
             $routePrefix = $container->getParameter($this->routePrefixParameterName);
             $this->routePrefix = $routePrefix;
         }
@@ -388,7 +387,7 @@ abstract class AbstractRestViewController extends FOSRestController
      * @param Request $request the request object
      *
      * @param ParamFetcher $paramFetcher
-     * @return FormInterface|FormTypeInterface|View
+     * @return View
      * @throws HandlerException
      */
     public function postAction(Request $request, ParamFetcher $paramFetcher)
@@ -409,22 +408,6 @@ abstract class AbstractRestViewController extends FOSRestController
             $view->setRouteParameters($routeOptions);
             $context = $this->context;
             $view->setContext($context);
-            return $view;
-        } catch (InvalidFormException $exception) {
-            $this->get('logger')->error(__METHOD__ . ":" . __LINE__ . " - " . $exception);
-
-            /**
-             * @var \Symfony\Component\Form\Form $form
-             */
-            $form = $exception->getForm();
-
-            if (Response::HTTP_CONFLICT !== $exception->getCode()) {
-                return $form;
-            } else {
-                $viewOptions = array('error' => (string)$form->getErrors(true));
-
-                return View::create($viewOptions, Response::HTTP_CONFLICT);
-            }
         } catch (NotNullConstraintViolationException $nncve) {
             // @todo refactor handlers to be transactional
             // preg_match /Integrity constraint violation: 1048 Column '(\w+)' cannot be null/
@@ -456,7 +439,7 @@ abstract class AbstractRestViewController extends FOSRestController
 
             $viewOptions = array('error' => $message);
 
-            return View::create($viewOptions, Response::HTTP_BAD_REQUEST);
+            $view = View::create($viewOptions, Response::HTTP_BAD_REQUEST);
         } catch (UniqueConstraintViolationException $ucve) {
             $message = $ucve->getMessage();
             $pattern = "/Duplicate entry '(.*)'/";
@@ -468,15 +451,17 @@ abstract class AbstractRestViewController extends FOSRestController
 
             $viewOptions = array('error' => $message);
 
-            return View::create($viewOptions, Response::HTTP_CONFLICT);
+            $view = View::create($viewOptions, Response::HTTP_CONFLICT);
         } catch (HandlerException $he) {
             // only bubble up handler exception for handling at concrete controller level
             throw $he;
         } catch (\Exception $e) {
             $viewOptions = array('error' => $e->getMessage());
 
-            return View::create($viewOptions, Response::HTTP_INTERNAL_SERVER_ERROR);
+            $view = View::create($viewOptions, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $view;
     }
 
     /**
@@ -487,56 +472,40 @@ abstract class AbstractRestViewController extends FOSRestController
      * @param Request $request the request object
      * @param ParamFetcher $paramFetcher
      * @param int $id the entity id
-     * @return View|FormTypeInterface|FormInterface
+     * @return View
      */
     public function putAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
         //$this->get('monolog.logger.api')->debug(__METHOD__ . ":" . __LINE__ . 'request: ' . var_export($request, true));
-        try {
-            if (!($entity = $this->getHandler()->get($id))) {
-                $statusCode = Response::HTTP_CREATED;
-                $entity = $this->getHandler()->handlePostRequest(
-                    $request,
-                    $paramFetcher
-                );
-            } else {
-                $statusCode = Response::HTTP_NO_CONTENT;
-                $entity = $this->getHandler()->handlePutRequest(
-                    $entity,
-                    $request,
-                    $paramFetcher
-                );
-            }
-
-            //$this->get('monolog.logger.api')->debug(__METHOD__ . ":" . __LINE__ . " - create:\n " . $statusCode);
-
-            $routeOptions = array(
-                'id' => $entity->getId(),
-                '_format' => $request->get('_format')
+        if (!($entity = $this->getHandler()->get($id))) {
+            $statusCode = Response::HTTP_CREATED;
+            $entity = $this->getHandler()->handlePostRequest(
+                $request,
+                $paramFetcher
             );
-
-            //$this->get('monolog.logger.api')->debug(__METHOD__ . ":" . __LINE__ . " - route options:\n" . var_export($routeOptions, true));
-
-            $view = new View(array($this->getViewTemplateVar() => $entity), $statusCode);
-            $view->setRoute($this->getGetEntityRoute());
-            $view->setRouteParameters($routeOptions);
-
-            return $view;
-        } catch (InvalidFormException $exception) {
-
-            /**
-             * @var \Symfony\Component\Form\Form $form
-             */
-            $form = $exception->getForm();
-
-            if (Response::HTTP_CONFLICT !== $exception->getCode()) {
-                return $form;
-            } else {
-                $viewOptions = array('error' => (string)$form->getErrors(true));
-
-                return View::create($viewOptions, Response::HTTP_CONFLICT);
-            }
+        } else {
+            $statusCode = Response::HTTP_NO_CONTENT;
+            $entity = $this->getHandler()->handlePutRequest(
+                $entity,
+                $request,
+                $paramFetcher
+            );
         }
+
+        //$this->get('monolog.logger.api')->debug(__METHOD__ . ":" . __LINE__ . " - create:\n " . $statusCode);
+
+        $routeOptions = array(
+            'id' => $entity->getId(),
+            '_format' => $request->get('_format')
+        );
+
+        //$this->get('monolog.logger.api')->debug(__METHOD__ . ":" . __LINE__ . " - route options:\n" . var_export($routeOptions, true));
+
+        $view = new View(array($this->getViewTemplateVar() => $entity), $statusCode);
+        $view->setRoute($this->getGetEntityRoute());
+        $view->setRouteParameters($routeOptions);
+
+        return $view;
     }
 
     /**
@@ -547,31 +516,26 @@ abstract class AbstractRestViewController extends FOSRestController
      * @param Request $request the request object
      * @param ParamFetcher $paramFetcher
      * @param int $id the entity id
-     * @return View|FormTypeInterface|FormInterface
+     * @return View
      */
     public function patchAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
-        try {
-            $entity = $this->getHandler()->handlePatchRequest(
-                $this->getHandler()->getOr404($id),
-                $request,
-                $paramFetcher
-            );
+        $entity = $this->getHandler()->handlePatchRequest(
+            $this->getHandler()->getOr404($id),
+            $request,
+            $paramFetcher
+        );
 
-            $routeOptions = array(
-                'id' => $entity->getId(),
-                '_format' => $request->get('_format')
-            );
+        $routeOptions = array(
+            'id' => $entity->getId(),
+            '_format' => $request->get('_format')
+        );
 
-            $view = new View(array($this->getViewTemplateVar() => $entity), Response::HTTP_NO_CONTENT);
-            $view->setRoute($this->getGetEntityRoute());
-            $view->setRouteParameters($routeOptions);
-            //return $this->routeRedirectView('api_1_get_entity', $routeOptions, Response::HTTP_NO_CONTENT);
-            return $view;
-        } catch (InvalidFormException $exception) {
-
-            return $exception->getForm();
-        }
+        $view = new View(array($this->getViewTemplateVar() => $entity), Response::HTTP_NO_CONTENT);
+        $view->setRoute($this->getGetEntityRoute());
+        $view->setRouteParameters($routeOptions);
+        //return $this->routeRedirectView('api_1_get_entity', $routeOptions, Response::HTTP_NO_CONTENT);
+        return $view;
     }
 
     /**
@@ -588,25 +552,19 @@ abstract class AbstractRestViewController extends FOSRestController
      * @param Request $request the request object
      * @param int $id the entity id
      *
-     * @return FormTypeInterface|FormInterface|View
+     * @return View
      *
      * @throws NotFoundHttpException when entity not exist
      */
     public function deleteAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
-        try {
-            $entity = $this->getHandler()->handleDeleteRequest(
-                $this->getHandler()->getOr404($id),
-                $request,
-                $paramFetcher
-            );
+        $entity = $this->getHandler()->handleDeleteRequest(
+            $this->getHandler()->getOr404($id),
+            $request,
+            $paramFetcher
+        );
 
-            return new View(null, Response::HTTP_NO_CONTENT);
-
-        } catch (InvalidFormException $exception) {
-
-            return $exception->getForm();
-        }
+        return new View(null, Response::HTTP_NO_CONTENT);
     }
 
     /**
@@ -624,9 +582,7 @@ abstract class AbstractRestViewController extends FOSRestController
     {
         $formTypeName = $this->getFormTypeClassName();
 
-        $formType = new $formTypeName();
-
-        return $formType;
+        return new $formTypeName();
     }
 
     /**

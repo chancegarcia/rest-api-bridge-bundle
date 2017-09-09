@@ -33,17 +33,10 @@ namespace Chance\RestApi\BridgeBundle\Controller\RestApi;
 
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
 use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
-use Chance\RestApi\BridgeBundle\Handler\AbstractRestHandler;
-use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
-use Doctrine\DBAL\Exception\NotNullConstraintViolationException;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use FOS\RestBundle\Context\Context;
 use FOS\RestBundle\Controller\Annotations;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\View\View;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -200,12 +193,29 @@ abstract class AbstractRestController extends AbstractRestViewController
      */
     public function postAction(Request $request, ParamFetcher $paramFetcher)
     {
-        $viewOrForm = parent::postAction($request, $paramFetcher);
-        if (!$viewOrForm instanceof View) {
-            return $viewOrForm;
+        try {
+            $view = parent::postAction($request, $paramFetcher);
+        } catch (InvalidFormException $exception) {
+            $this->get('logger')->error(__METHOD__ . ":" . __LINE__ . " - " . $exception);
+
+            /**
+             * @var \Symfony\Component\Form\Form $form
+             */
+            $form = $exception->getForm();
+
+            if (Response::HTTP_CONFLICT !== $exception->getCode()) {
+                return $form;
+            }
+
+            $viewOptions = array('error' => (string)$form->getErrors(true));
+
+            $view = View::create($viewOptions, Response::HTTP_CONFLICT);
+        } catch (HandlerException $he) {
+            // only bubble up handler exception for handling at concrete controller level
+            throw $he;
         }
 
-        return $this->handleView($viewOrForm);
+        return $this->handleView($view);
     }
 
     /**
@@ -220,12 +230,25 @@ abstract class AbstractRestController extends AbstractRestViewController
      */
     public function putAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
-        $viewOrForm = parent::putAction($request, $paramFetcher, $id);
-        if (!$viewOrForm instanceof View) {
-            return $viewOrForm;
+        try {
+            $view = parent::putAction($request, $paramFetcher, $id);
+        } catch (InvalidFormException $exception) {
+
+        /**
+         * @var \Symfony\Component\Form\Form $form
+         */
+        $form = $exception->getForm();
+
+        if (Response::HTTP_CONFLICT !== $exception->getCode()) {
+            return $form;
         }
 
-        return $this->handleView($viewOrForm);
+        $viewOptions = array('error' => (string)$form->getErrors(true));
+
+        $view = View::create($viewOptions, Response::HTTP_CONFLICT);
+        }
+
+        return $this->handleView($view);
     }
 
     /**
@@ -240,12 +263,14 @@ abstract class AbstractRestController extends AbstractRestViewController
      */
     public function patchAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
-        $viewOrForm = parent::patchAction($request, $paramFetcher, $id);
-        if (!$viewOrForm instanceof View) {
-            return $viewOrForm;
+        try {
+            $view = parent::patchAction($request, $paramFetcher, $id);
+        } catch (InvalidFormException $exception) {
+
+            return $exception->getForm();
         }
 
-        return $this->handleView($viewOrForm);
+        return $this->handleView($view);
     }
 
     /**
@@ -268,11 +293,13 @@ abstract class AbstractRestController extends AbstractRestViewController
      */
     public function deleteAction(Request $request, ParamFetcher $paramFetcher, $id)
     {
-        $viewOrForm = parent::deleteAction($request, $paramFetcher, $id);
-        if (!$viewOrForm instanceof View) {
-            return $viewOrForm;
+        try {
+            $view = parent::deleteAction($request, $paramFetcher, $id);
+        } catch (InvalidFormException $exception) {
+
+            return $exception->getForm();
         }
 
-        return $this->handleView($viewOrForm);
+        return $this->handleView($view);
     }
 }
