@@ -49,6 +49,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+// todo move add/edit/delete up to AbstractHandler and have default event fire names as add/edit/delete; have this send the rest name keys to override those other eventt names
 abstract class AbstractRestHandler extends AbstractHandler implements RestHandlerInterface
 {
     const BASIC_ENTITY_INTERFACE = 'Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface';
@@ -676,7 +677,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             if (in_array($key, $this->booleanProperties)) {
                 // re-nice it to actual boolean since the form transformer is being weird
                 // @todo do this properly with form transformer. this is a hack
-                $parameters[$key] = (bool)$value;
+                $parameters[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             }
         }
 
@@ -941,6 +942,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
      */
     public function getEvent($key, BasicEntityInterface $entity, $context = array())
     {
+        // todo factory the event object? need event factory property setter then, if so.
         $event = null;
         try {
             $eventClassName = $this->getEventClassName($key);
