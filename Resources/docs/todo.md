@@ -1,5 +1,6 @@
 # general
 - config settings
+    - event config
 - exception listener/controller
 # controller
 - use config settings to enable serialize null

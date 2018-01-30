@@ -31,6 +31,8 @@
 
 namespace Chance\RestApi\BridgeBundle\Model\Handler;
 
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 interface AbstractHandlerInterface
@@ -51,4 +53,9 @@ interface AbstractHandlerInterface
      * @return bool|mixed|UserInterface
      */
     public function getCurrentUser();
+
+    /**
+     * @return ObjectManager|EntityManagerInterface
+     */
+    public function getObjectManager();
 }
