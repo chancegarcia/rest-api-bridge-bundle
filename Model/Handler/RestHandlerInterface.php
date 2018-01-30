@@ -70,6 +70,11 @@ interface RestHandlerInterface extends AbstractHandlerInterface
     public function setUserAware($userAware = null);
 
     /**
+     * @return ObjectRepository
+     */
+    public function getRepository();
+
+    /**
      * @param ObjectRepository $repository
      */
     public function setRepository(ObjectRepository $repository = null);
