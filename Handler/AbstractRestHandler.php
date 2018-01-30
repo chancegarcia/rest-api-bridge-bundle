@@ -114,6 +114,9 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
         'put' => null,
         'patch' => null,
         'delete' => null,
+        'add' => null,
+        'edit' => null,
+        'remove' => null,
     );
 
     protected $eventClassNames = array(
@@ -122,6 +125,9 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
         'put' => null,
         'patch' => null,
         'delete' => null,
+        'add' => null,
+        'edit' => null,
+        'remove' => null,
     );
 
     /**
@@ -157,6 +163,14 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
     public function setUserAware($userAware = null)
     {
         $this->userAware = filter_var($userAware, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @return ObjectRepository
+     */
+    public function getRepository()
+    {
+        return $this->repository;
     }
 
     /**
@@ -518,7 +532,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
     {
         $this->persistEntity($entity);
         if (!is_string($eventKey)) {
-            $eventKey = 'POST';
+            $eventKey = 'add';
         }
         $this->fireEvent($entity, $eventKey, $context);
     }
@@ -532,7 +546,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
     {
         $this->persistEntity($entity);
         if (!is_string($eventKey)) {
-            $eventKey = 'PATCH';
+            $eventKey = 'edit';
         }
         $this->fireEvent($entity, $eventKey, $context);
     }
@@ -548,7 +562,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
         $this->om->flush();
 
         if (!is_string($eventKey)) {
-            $eventKey = 'DELETE';
+            $eventKey = 'remove';
         }
         $this->fireEvent($entity, $eventKey, $context);
     }
@@ -997,4 +1011,5 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $this->routePrefix = $routePrefix;
         }
     }
+
 }

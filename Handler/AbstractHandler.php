@@ -143,6 +143,14 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
     }
 
     /**
+     * @return ObjectManager|EntityManagerInterface
+     */
+    public function getObjectManager()
+    {
+        return $this->om;
+    }
+
+    /**
      * @param ObjectManager|EntityManagerInterface $om
      */
     public function setObjectManager(ObjectManager $om = null)
