@@ -231,6 +231,11 @@ abstract class AbstractRestViewController extends FOSRestController
         $context = $this->context;
         $view->setContext($context);
 
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
+
         return $view;
     }
 
@@ -251,6 +256,11 @@ abstract class AbstractRestViewController extends FOSRestController
         $view = new View(array($this->getViewTemplateVar() => $entity), Response::HTTP_OK);
         $context = $this->context;
         $view->setContext($context);
+
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
 
         return $view;
     }
@@ -461,6 +471,11 @@ abstract class AbstractRestViewController extends FOSRestController
             $view = View::create($viewOptions, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
+
         return $view;
     }
 
@@ -505,6 +520,11 @@ abstract class AbstractRestViewController extends FOSRestController
         $view->setRoute($this->getGetEntityRoute());
         $view->setRouteParameters($routeOptions);
 
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
+
         return $view;
     }
 
@@ -535,6 +555,12 @@ abstract class AbstractRestViewController extends FOSRestController
         $view->setRoute($this->getGetEntityRoute());
         $view->setRouteParameters($routeOptions);
         //return $this->routeRedirectView('api_1_get_entity', $routeOptions, Response::HTTP_NO_CONTENT);
+
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
+
         return $view;
     }
 
@@ -564,7 +590,14 @@ abstract class AbstractRestViewController extends FOSRestController
             $paramFetcher
         );
 
-        return new View(null, Response::HTTP_NO_CONTENT);
+        $view = new View(null, Response::HTTP_NO_CONTENT);
+
+        $format = $request->get('_format');
+        if (!empty($format)) {
+            $view->setFormat($format);
+        }
+
+        return $view;
     }
 
     /**
