@@ -44,6 +44,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Core\Role\RoleInterface;
@@ -204,7 +205,12 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
      */
     public function getCurrentUser()
     {
-        $user = $this->tokenStorage->getToken()->getUser();
+        $token = $this->tokenStorage->getToken();
+        if (!$token instanceof TokenInterface) {
+            return false;
+        }
+
+        $user = $token->getUser();
 
         // @todo validate user abstract method?
         if (!$this->validateUser($user)) {
