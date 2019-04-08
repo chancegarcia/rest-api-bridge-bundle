@@ -31,6 +31,8 @@
 
 namespace Chance\RestApi\BridgeBundle\Model\Handler;
 
+use Chance\RestApi\BridgeBundle\Model\AppEventInterface;
+use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -58,4 +60,108 @@ interface AbstractHandlerInterface
      * @return ObjectManager|EntityManagerInterface
      */
     public function getObjectManager();
+
+    /**
+     * @param BasicEntityInterface $entity
+     * @param $method
+     */
+    public function audit(BasicEntityInterface $entity, $method);
+
+    /**
+     * @param BasicEntityInterface $entity
+     */
+    public function auditPersist(BasicEntityInterface $entity);
+
+    /**
+     * @param BasicEntityInterface $entity
+     * @param bool $andFlush
+     *
+     * @return BasicEntityInterface
+     */
+    public function persistEntity(BasicEntityInterface $entity, $andFlush = true);
+
+    public function getContext();
+
+    public function fireEvent(BasicEntityInterface $entity, $eventKey, $context = array());
+
+    /**
+     * @param BasicEntityInterface $entity
+     * @param null|string $eventKey
+     * @param array $context
+     */
+    public function add(BasicEntityInterface $entity, $eventKey = null, array $context = array());
+
+    /**
+     * @param BasicEntityInterface $entity
+     * @param null|string $eventKey
+     * @param array $context
+     */
+    public function edit(BasicEntityInterface $entity, $eventKey = null, array $context = array());
+
+    /**
+     * @param BasicEntityInterface $entity
+     * @param null|string $eventKey
+     * @param array $context
+     */
+    public function remove(BasicEntityInterface $entity, $eventKey = null, array $context = array());
+
+    /**
+     * return event name or if empty, use event class to get the name
+     * @param $key
+     * @param AppEventInterface|null $event
+     *
+     * @return string
+     */
+    public function getEventName($key, AppEventInterface $event = null);
+
+    /**
+     * @return array
+     */
+    public function getEventNames();
+
+    /**
+     * @param string $key
+     * @param string $value
+     *
+     * @throws HandlerException
+     */
+    public function setEventName($key, $value);
+
+    /**
+     * @param array $eventNames
+     */
+    public function setEventNames($eventNames = array());
+
+    /**
+     * @param $key
+     *
+     * @return string
+     */
+    public function getEventClassName($key);
+
+
+    /**
+     * @return array
+     */
+    public function getEventClassNames();
+
+    /**
+     * @param string $key
+     * @param string $value
+     *
+     */
+    public function setEventClassName($key, $value);
+
+    /**
+     * @param array $eventClassNames
+     */
+    public function setEventClassNames($eventClassNames = array());
+
+    /**
+     * @param $key
+     * @param array $context
+     *
+     * @return AppEventInterface|null
+     */
+    public function getEvent($key, BasicEntityInterface $entity, $context = array());
 }
