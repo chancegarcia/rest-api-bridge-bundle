@@ -342,6 +342,27 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
         return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
     }
 
+    // todo add searchable list using orX
+    // https://stackoverflow.com/questions/9815047/chaining-orx-in-doctrine2-query-builder
+    /*
+     * $criteria = Criteria::create();
+        $criteria->andWhere(Criteria::expr()->orX(
+            Criteria::expr()->contains('name', 'test'),
+            Criteria::expr()->contains('originalText', 'test'),
+            Criteria::expr()->contains('plainText', 'test'),
+            Criteria::expr()->contains('fileSize', 'test'),
+            Criteria::expr()->contains('type', 'test'),
+            Criteria::expr()->contains('createdOn', 'test'),
+            Criteria::expr()->contains('createdBy', 'test'),
+            Criteria::expr()->contains('modifiedOn', 'test'),
+            Criteria::expr()->contains('modifiedBy', 'test')
+            )
+        );
+        $criteriaResults = $repo->matching($criteria);
+        $total = $criteriaResults->count()
+        $entities = $criteriaResults->toArray()
+     */
+
     /**
      * @param Request|null $request
      * @param ParamFetcher|null $paramFetcher
