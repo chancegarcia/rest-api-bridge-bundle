@@ -33,6 +33,7 @@ namespace Chance\RestApi\BridgeBundle\Controller\RestApi;
 
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
 use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
+use Chance\RestApi\BridgeBundle\Exception\RestApiBridgeBubbleUpException;
 use FOS\RestBundle\Controller\Annotations;
 use FOS\RestBundle\Request\ParamFetcher;
 use FOS\RestBundle\View\View;
@@ -213,6 +214,8 @@ abstract class AbstractRestController extends AbstractRestViewController
         } catch (HandlerException $he) {
             // only bubble up handler exception for handling at concrete controller level
             throw $he;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         }
 
         return $this->handleView($view);
