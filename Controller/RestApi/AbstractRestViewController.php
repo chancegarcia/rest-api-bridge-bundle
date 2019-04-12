@@ -32,6 +32,7 @@
 namespace Chance\RestApi\BridgeBundle\Controller\RestApi;
 
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
+use Chance\RestApi\BridgeBundle\Exception\RestApiBridgeBubbleUpException;
 use Chance\RestApi\BridgeBundle\Handler\AbstractRestHandler;
 use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
 use Doctrine\DBAL\Exception\NotNullConstraintViolationException;
@@ -221,6 +222,8 @@ abstract class AbstractRestViewController extends FOSRestController
                     $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                     break;
             }
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             $data = $e->getMessage();
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -465,6 +468,8 @@ abstract class AbstractRestViewController extends FOSRestController
         } catch (HandlerException $he) {
             // only bubble up handler exception for handling at concrete controller level
             throw $he;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             $viewOptions = array('error' => $e->getMessage());
 

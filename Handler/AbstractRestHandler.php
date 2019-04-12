@@ -274,6 +274,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $limit = (null == $limit) ? null : $limit;
         } catch (\InvalidArgumentException $iae) {
             $limit = null;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             // need to make log methods
             $limit = null;
@@ -289,6 +291,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $offset = (null == $offset) ? null : $offset;
         } catch (\InvalidArgumentException $iae) {
             $offset = null;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             // need to make log methods
             $offset = null;

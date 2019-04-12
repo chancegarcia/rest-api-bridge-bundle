@@ -32,6 +32,7 @@
 namespace Chance\RestApi\BridgeBundle\Handler;
 
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
+use Chance\RestApi\BridgeBundle\Exception\RestApiBridgeBubbleUpException;
 use Chance\RestApi\BridgeBundle\Model\AppEventInterface;
 use Chance\RestApi\BridgeBundle\Model\Entity\AppUserInterface;
 use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
@@ -379,6 +380,8 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
             $this->error($nncve->getMessage(), array(__METHOD__, __LINE__));
             $this->error($nncve->getTraceAsString(), array(__METHOD__, __LINE__));
             throw $nncve;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+                throw $rabbe;
         } catch (\Exception $e) {
             $this->error(get_class($e), array(__METHOD__, __LINE__));
             $this->error($e->getMessage(), array(__METHOD__, __LINE__));
@@ -595,6 +598,8 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
             }
         } catch (HandlerException $e) {
             // probably should do something like log but catching to avoid invalid key (blank) exception
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         }
 
         return $event;
