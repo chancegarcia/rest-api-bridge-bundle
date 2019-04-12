@@ -307,6 +307,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $limit = (null == $limit) ? null : $limit;
         } catch (\InvalidArgumentException $iae) {
             $limit = null;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             // need to make log methods
             $limit = null;
@@ -322,6 +324,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $offset = (null == $offset) ? null : $offset;
         } catch (\InvalidArgumentException $iae) {
             $offset = null;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             // need to make log methods
             $offset = null;
@@ -497,6 +501,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $this->error($nncve->getMessage(), array(__METHOD__, __LINE__));
             $this->error($nncve->getTraceAsString(), array(__METHOD__, __LINE__));
             throw $nncve;
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         } catch (\Exception $e) {
             $this->error(get_class($e), array(__METHOD__, __LINE__));
             $this->error($e->getMessage(), array(__METHOD__, __LINE__));
@@ -971,6 +977,8 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             }
         } catch (HandlerException $e) {
             // probably should do something like log but catching to avoid invalid key (blank) exception
+        } catch (RestApiBridgeBubbleUpException $rabbe) {
+            throw $rabbe;
         }
 
         return $event;
