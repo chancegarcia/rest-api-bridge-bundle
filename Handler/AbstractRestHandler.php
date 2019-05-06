@@ -31,10 +31,12 @@
 
 namespace Chance\RestApi\BridgeBundle\Handler;
 
+use Chance\RestApi\BridgeBundle\DataModel\RestList;
 use Chance\RestApi\BridgeBundle\Event\AbstractAppEvent;
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
 use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
 use Chance\RestApi\BridgeBundle\Exception\UuidException;
+use Chance\RestApi\BridgeBundle\Factory\RestListFactory;
 use Chance\RestApi\BridgeBundle\Model\AppEventInterface;
 use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
 use Chance\RestApi\BridgeBundle\Model\Handler\RestHandlerInterface;
@@ -311,7 +313,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
      * @param Request $request
      * @param ParamFetcher $paramFetcher
      *
-     * @return array
+     * @return RestList
      */
     public function handleGetAllRequest(Request $request, ParamFetcher $paramFetcher)
     {
@@ -333,7 +335,7 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
      * @param int $offset starting from the offset
      * @param null|array $orderBy
      *
-     * @return array
+     * @return RestList
      */
     public function all($criteria = array(), $limit = null, $offset = null, $orderBy = null)
     {
@@ -343,7 +345,17 @@ abstract class AbstractRestHandler extends AbstractHandler implements RestHandle
             $criteria[static::USER_AWARE_ID_PROPERTY] = $this->getCurrentUser()->getId();
         }
 
-        return $this->repository->findBy($criteria, $orderBy, $limit, $offset);
+        $entities = $this->repository->findBy($criteria, $orderBy, $limit, $offset);
+
+        $total = count ($this->repository->findBy($criteria));
+
+        $restList = RestListFactory::createRestListClass();
+        $restList->setRecords($entities);
+        $restList->setTotal($total);
+        $restList->setLimit($limit);
+        $restList->setOffset($offset);
+
+        return $restList;
     }
 
     // todo add searchable list using orX
