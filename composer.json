@@ -3,7 +3,7 @@
   "description": "Add-on to FOSRestBundle to deploy CRUD REST operations for an application. API documentation provided through NelmioApiDocBundle.",
   "type": "symfony-bundle",
   "require": {
-    "symfony/symfony": "^2.8.0",
+    "symfony/symfony": "^2.8||^3.4",
     "doctrine/orm": "^2.4.8",
     "doctrine/doctrine-bundle": "^1.4",
     "friendsofsymfony/rest-bundle": "^2.0",
