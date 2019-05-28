@@ -35,6 +35,7 @@ use Chance\RestApi\BridgeBundle\DataModel\RestList;
 use Chance\RestApi\BridgeBundle\Event\AbstractAppEvent;
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
 use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
+use Chance\RestApi\BridgeBundle\Exception\RestApiBridgeBubbleUpException;
 use Chance\RestApi\BridgeBundle\Exception\UuidException;
 use Chance\RestApi\BridgeBundle\Factory\RestListFactory;
 use Chance\RestApi\BridgeBundle\Model\AppEventInterface;
