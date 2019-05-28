@@ -67,6 +67,7 @@ abstract class AbstractAppEvent extends Event implements AppEventInterface
      */
     public function setContainer(ContainerInterface $container = null)
     {
+        @trigger_error('setContainer method is deprecated since Symfony 3.4 and will be removed in 4.0. Inject a PSR-11 container using the constructor instead. v2.0+ of this bundle will be removing this to comply with symfony 4.0', E_USER_DEPRECATED);
         $this->container = $container;
     }
 
