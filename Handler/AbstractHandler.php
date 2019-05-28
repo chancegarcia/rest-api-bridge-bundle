@@ -51,6 +51,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Role\Role;
+use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -125,6 +126,11 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
      * @var EventDispatcherInterface
      */
     protected $eventDispatcher;
+
+    /**
+     * @var RoleHierarchyInterface
+     */
+    protected $roleHierarchy;
 
     /**
      * @var ContainerInterface
@@ -218,6 +224,24 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
     {
         $this->authorizationChecker = $authorizationChecker;
     }
+
+    /**
+     * @return RoleHierarchyInterface
+     */
+    public function getRoleHierarchy()
+    {
+        return $this->roleHierarchy;
+    }
+
+    /**
+     * @param RoleHierarchyInterface $roleHierarchy
+     */
+    public function setRoleHierarchy(RoleHierarchyInterface $roleHierarchy)
+    {
+        $this->roleHierarchy = $roleHierarchy;
+    }
+
+
 
     /**
      * @param AppUserInterface $user
@@ -330,12 +354,10 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
         }
 
         if (!is_array($assignedRoles)) {
-            $tokenStorage = $this->container->get('security.token_storage');
-            $assignedRoles = $tokenStorage->getToken()->getRoles();
+            $assignedRoles = $this->tokenStorage->getToken()->getRoles();
         }
 
-        $roleHierarchy = $this->container->get('security.role_hierarchy');
-        $allRoles = $roleHierarchy->getReachableRoles($assignedRoles);
+        $allRoles = $this->roleHierarchy->getReachableRoles($assignedRoles);
         $userRoles = array();
         foreach ($allRoles as $role) {
             /**

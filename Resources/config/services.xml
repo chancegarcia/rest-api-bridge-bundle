@@ -44,6 +44,9 @@
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
+            <call method="setRoleHierarchy">
+                <argument type="service" id="security.role_hierarchy"/>
+            </call>
         </service>
         <service id="chance.rest_api_bridge.handler.rest.abstract"
                  class="%chance.rest_api_bridge.handler.rest.abstract.class%"
