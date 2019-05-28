@@ -62,10 +62,12 @@
 
         <service id="chance.rest_api_bridge.handler.basic"
                  class="Chance\RestApi\BridgeBundle\Handler\BasicHandler"
+                 public="true"
                  parent="chance.rest_api_bridge.handler.abstract">
         </service>
         <service id="chance.rest_api_bridge.handler.rest.basic"
                  class="Chance\RestApi\BridgeBundle\Handler\BasicRestHandler"
+                 public="true"
                  parent="chance.rest_api_bridge.handler.rest.abstract">
         </service>
     </services>
