@@ -47,6 +47,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Role\Role;
+use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -99,6 +100,11 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
     protected $eventDispatcher;
 
     /**
+     * @var RoleHierarchyInterface
+     */
+    protected $roleHierarchy;
+
+    /**
      * @var ContainerInterface
      */
     protected $container;
@@ -108,6 +114,7 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
      */
     public function setContainer(ContainerInterface $container = null)
     {
+        @trigger_error('setContainer method is deprecated since Symfony 3.4 and will be removed in 4.0. Inject a PSR-11 container using the constructor instead. v2.0+ of this bundle will be removing this to comply with symfony 4.0', E_USER_DEPRECATED);
         $this->container = $container;
     }
 
@@ -190,6 +197,24 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
     {
         $this->authorizationChecker = $authorizationChecker;
     }
+
+    /**
+     * @return RoleHierarchyInterface
+     */
+    public function getRoleHierarchy()
+    {
+        return $this->roleHierarchy;
+    }
+
+    /**
+     * @param RoleHierarchyInterface $roleHierarchy
+     */
+    public function setRoleHierarchy(RoleHierarchyInterface $roleHierarchy)
+    {
+        $this->roleHierarchy = $roleHierarchy;
+    }
+
+
 
     /**
      * @param AppUserInterface $user
@@ -302,12 +327,10 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
         }
 
         if (!is_array($assignedRoles)) {
-            $tokenStorage = $this->container->get('security.token_storage');
-            $assignedRoles = $tokenStorage->getToken()->getRoles();
+            $assignedRoles = $this->tokenStorage->getToken()->getRoles();
         }
 
-        $roleHierarchy = $this->container->get('security.role_hierarchy');
-        $allRoles = $roleHierarchy->getReachableRoles($assignedRoles);
+        $allRoles = $this->roleHierarchy->getReachableRoles($assignedRoles);
         $userRoles = array();
         foreach ($allRoles as $role) {
             /**

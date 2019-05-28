@@ -34,6 +34,7 @@ namespace Chance\RestApi\BridgeBundle\Handler;
 use Chance\RestApi\BridgeBundle\Event\AbstractAppEvent;
 use Chance\RestApi\BridgeBundle\Exception\Handler\HandlerException;
 use Chance\RestApi\BridgeBundle\Exception\InvalidFormException;
+use Chance\RestApi\BridgeBundle\Exception\RestApiBridgeBubbleUpException;
 use Chance\RestApi\BridgeBundle\Exception\UuidException;
 use Chance\RestApi\BridgeBundle\Model\AppEventInterface;
 use Chance\RestApi\BridgeBundle\Model\Entity\BasicEntityInterface;
