@@ -52,7 +52,7 @@ use Symfony\Component\Security\Core\Role\RoleInterface;
 use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwareInterface
+abstract class AbstractHandler implements AbstractHandlerInterface
 {
     /**
      * @var ObjectManager|EntityManagerInterface
@@ -103,20 +103,6 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
      * @var RoleHierarchyInterface
      */
     protected $roleHierarchy;
-
-    /**
-     * @var ContainerInterface
-     */
-    protected $container;
-
-    /**
-     * @param ContainerInterface $container
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        @trigger_error('setContainer method is deprecated since Symfony 3.4 and will be removed in 4.0. Inject a PSR-11 container using the constructor instead. v2.0+ of this bundle will be removing this to comply with symfony 4.0', E_USER_DEPRECATED);
-        $this->container = $container;
-    }
 
     /**
      * @param UrlGeneratorInterface $router
@@ -214,8 +200,6 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
         $this->roleHierarchy = $roleHierarchy;
     }
 
-
-
     /**
      * @param AppUserInterface $user
      * @return bool
@@ -235,6 +219,9 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
             return false;
         }
 
+        /**
+         * @var AppUserInterface $user
+         */
         $user = $token->getUser();
 
         // @todo validate user abstract method?
@@ -245,6 +232,10 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
         return $user;
     }
 
+    /**
+     * @param null $number
+     * @return bool
+     */
     public function isInt($number = null)
     {
         if (!is_numeric($number)) {
@@ -266,35 +257,42 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
         return true;
     }
 
+    /**
+     * @param $message
+     * @param array $context
+     */
     public function error($message, $context = array())
     {
         if ($this->logger instanceof LoggerInterface) {
             $this->logger->error($message, $context);
         }
-
-        return $this;
     }
 
+    /**
+     * @param $message
+     * @param array $context
+     */
     public function debug($message, $context = array())
     {
         if ($this->logger instanceof LoggerInterface) {
             $this->logger->debug($message, $context);
         }
-
-        return $this;
     }
 
+    /**
+     * @param $message
+     * @param array $context
+     */
     public function info($message, $context = array())
     {
         if ($this->logger instanceof LoggerInterface) {
             $this->logger->info($message, $context);
         }
-
-        return $this;
     }
 
     /**
      * @return array
+     * @throws HandlerException
      */
     public function getCurrentUserRoles()
     {
@@ -322,9 +320,6 @@ abstract class AbstractHandler implements AbstractHandlerInterface, ContainerAwa
      */
     public function getAssignedRoles(array $assignedRoles = null)
     {
-        if (!$this->container instanceof ContainerInterface) {
-            throw new HandlerException("container not set", HandlerException::MISSING_DEPENDENCY);
-        }
 
         if (!is_array($assignedRoles)) {
             $assignedRoles = $this->tokenStorage->getToken()->getRoles();
