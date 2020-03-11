@@ -33,16 +33,13 @@
                 <argument type="service" id="router"/>
             </call>
             <call method="setTemplating">
-                <argument type="service" id="templating"/>
+                <argument type="service" id="fos_rest.templating"/>
             </call>
             <call method="setMailer">
                 <argument type="service" id="mailer"/>
             </call>
             <call method="setEventDispatcher">
                 <argument type="service" id="event_dispatcher"/>
-            </call>
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
             </call>
             <call method="setRoleHierarchy">
                 <argument type="service" id="security.role_hierarchy"/>
