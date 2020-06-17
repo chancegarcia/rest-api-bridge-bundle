@@ -225,7 +225,11 @@ abstract class AbstractHandler implements AbstractHandlerInterface
         $user = $token->getUser();
 
         // @todo validate user abstract method?
-        if (!$this->validateUser($user)) {
+        if ($user instanceof AppUserInterface) {
+            if (!$this->validateUser($user)) {
+                $user = false;
+            }
+        } else {
             $user = false;
         }
 
